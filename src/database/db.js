@@ -1,12 +1,11 @@
 import mongoose from "mongoose";
-// const mongoose = require("mongoose"); // CommonJS
 
 const connectDatabase = () => {
     console.log("Waiting for connection configuration...");
 
     mongoose.connect(
         process.env.MONGODB_ACCESS,
-        { useNewUrlParser: true } // , useUnifieldTopology: true
+        { useNewUrlParser: true }
     ).then(
         () => console.log("MongoDB Atlas Connected")
     ).catch(
@@ -15,4 +14,3 @@ const connectDatabase = () => {
 }
 
 export default connectDatabase
-// module.exports = connectDatabase

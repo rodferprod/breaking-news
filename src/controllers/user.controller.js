@@ -1,5 +1,4 @@
 import userService from "../services/user.service.js";
-// const userService = require('../services/user.service') // CommonJS
 
 const create = async (req, res) => {
     try {
@@ -134,10 +133,3 @@ export default {
     findById,
     update
 }
-
-// module.exports = {
-//     create,
-//     findAll,
-//     findById,
-//     update
-// }; // CommonJS
