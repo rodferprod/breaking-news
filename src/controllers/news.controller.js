@@ -1,5 +1,4 @@
-import { createNewsService, findAllNewsService } from '../services/news.service.js'
-
+import { createNewsService, findAllNewsService, countNewsService } from '../services/news.service.js'
 
 const createNews = async (req, res) => {
     try{
@@ -35,13 +34,65 @@ const createNews = async (req, res) => {
 
 const findAllNews = async (req, res) => {
     try{
-        const news = await findAllNewsService();
+        let { limit, offset } = req.query;
+        
+        if(!limit) {
+            limit = 5;
+        } else {
+            limit = Number(limit);
+        }
+
+        if(!offset) {
+            offset = 0;
+        } else {
+            offset = Number(offset);
+        }
+
+        const news = await findAllNewsService(limit, offset);
+
         if(news.length === 0) {
             res.status(400).send({
-                message: "There are no registered users"
+                message: "There are no registered news"
             })
         }
-        res.send(news)
+
+        const total = await countNewsService();
+        
+        const currentURL = req.baseUrl;
+        
+        const next = offset + limit;
+        const previous = offset - limit < 0
+            ? null
+            : offset - limit
+
+        const nextUrl = next < total
+            ? `${currentURL}?limit=${limit}&offset=${next}`
+            : null;
+
+        const previousUrl = previous != null
+            ? `${currentURL}?limit=${limit}&offset=${previous}`
+            : null;
+
+        res.send({
+            nextUrl,
+            previousUrl,
+            limit,
+            offset,
+            total,
+            results: news.map((item) => ({
+                id: item._id,
+                title: item.title,
+                text: item.text,
+                banner: item.banner,
+                likes: item.likes,
+                comments: item.comments,
+                userId: item.user._id,
+                name: item.user.name,
+                username: item.user.username,
+                avatar: item.user.avatar
+            }))
+        });
+
     } catch (error) {
         res.status(500).send(
             {
