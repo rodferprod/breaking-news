@@ -17,11 +17,11 @@ const createNews = async (req, res) => {
             title,
             text,
             banner,
-            user: { "_id": "668c4155d065c729ac3d6fd1" }
+            user: { _id: req.id }
         })
 
         res.status(201).send({
-            message: "User created successfully"
+            message: "News created successfully"
         })
 
     } catch (error) {
@@ -34,13 +34,21 @@ const createNews = async (req, res) => {
 }
 
 const findAllNews = async (req, res) => {
-    const news = await findAllNewsService();
-    if(news.length === 0) {
-        res.status(400).send({
-            message: "There are no registered users"
-        })
+    try{
+        const news = await findAllNewsService();
+        if(news.length === 0) {
+            res.status(400).send({
+                message: "There are no registered users"
+            })
+        }
+        res.send(news)
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
     }
-    res.send(news)
 }
 
 export { createNews, findAllNews }

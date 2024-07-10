@@ -1,5 +1,4 @@
 import User from "../models/User.js";
-// const User = require("../models/User"); // CommonJS
 
 const createService = (body) => User.create(body);
 
@@ -28,10 +27,3 @@ export default {
     findByIdService,
     updateService
 }
-
-// module.exports = {
-//     createService,
-//     findAllService,
-//     findByIdService,
-//     updateService
-// } // CommonJS

@@ -7,8 +7,6 @@ const login = async (req, res) => {
 
         const user = await loginService(email);
 
-        console.log('user:', user)
-
         const message = "User or password not valid" ;
         
         if(!user) {
@@ -20,8 +18,6 @@ const login = async (req, res) => {
         }
 
         const validPassword = await bcrypt.compareSync(password, user.password)
-
-        console.log('validPassword:', validPassword)
 
         if(!validPassword) {
             res.status(400).send(
