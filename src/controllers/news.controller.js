@@ -3,7 +3,8 @@ import {
     findAllNewsService,
     countNewsService,
     findTopNewsService,
-    findNewsByIdService
+    findNewsByIdService,
+    findNewsByTitleService
 } from '../services/news.service.js'
 
 const createNews = async (req, res) => {
@@ -173,6 +174,52 @@ const findNewsById = async (req, res) => {
                 avatar: news.user.avatar
             }
         });
+
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
+const findNewsByTitle = async (req, res) => {
+    try {
+
+        const { title } = req.query;
+
+        if(!title) {
+            return res.status(400).send({
+                message: "A description is expected"
+            })
+        }
+        
+        const news = await findNewsByTitleService(title);
+
+        if(news.length === 0) {
+            res.status(400).send(
+                {
+                    message: 'There are no news with this title'
+                }
+            )
+        }
+
+        res.send({
+            results: news.map((item) => ({
+                id: item._id,
+                title: item.title,
+                text: item.text,
+                banner: item.banner,
+                likes: item.likes,
+                comments: item.comments,
+                userId: item.user._id,
+                name: item.user.name,
+                username: item.user.username,
+                avatar: item.user.avatar
+            }))
+        });
+    
     } catch (error) {
         res.status(500).send(
             {
@@ -186,5 +233,6 @@ export {
     createNews,
     findAllNews,
     findTopNews,
-    findNewsById
+    findNewsById,
+    findNewsByTitle
 }
