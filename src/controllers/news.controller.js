@@ -1,4 +1,9 @@
-import { createNewsService, findAllNewsService, countNewsService } from '../services/news.service.js'
+import {
+    createNewsService,
+    findAllNewsService,
+    countNewsService,
+    findTopNewsService
+} from '../services/news.service.js'
 
 const createNews = async (req, res) => {
     try{
@@ -102,4 +107,30 @@ const findAllNews = async (req, res) => {
     }
 }
 
-export { createNews, findAllNews }
+const findTopNews = async (req, res) => {
+    
+    const topNews = await findTopNewsService();
+
+    if(!topNews) {
+        return res.status(400).send({
+            message: "There are no posts"
+        })
+    }
+
+    res.send({
+        results: {
+            id: topNews._id,
+            title: topNews.title,
+            text: topNews.text,
+            banner: topNews.banner,
+            likes: topNews.likes,
+            comments: topNews.comments,
+            userId: topNews.user._id,
+            name: topNews.user.name,
+            username: topNews.user.username,
+            avatar: topNews.user.avatar
+        }
+    });
+}
+
+export { createNews, findAllNews, findTopNews }
