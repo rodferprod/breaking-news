@@ -4,7 +4,8 @@ import {
     countNewsService,
     findTopNewsService,
     findNewsByIdService,
-    findNewsByTitleService
+    findNewsByTitleService,
+    findNewsByUserService
 } from '../services/news.service.js'
 
 const createNews = async (req, res) => {
@@ -229,10 +230,47 @@ const findNewsByTitle = async (req, res) => {
     }
 }
 
+const findNewsByUser = async (req, res) => {
+    try{
+        // Receiving id from authMiddleware
+        const id = req.id;
+
+        const news = await findNewsByUserService(id);
+
+        if(news.length === 0) {
+            return res.status(400).send({
+                message: "There are no news from informed user"
+            })
+        }
+
+        res.send({
+            results: news.map((item) => ({
+                id: item._id,
+                title: item.title,
+                text: item.text,
+                banner: item.banner,
+                likes: item.likes,
+                comments: item.comments,
+                userId: item.user._id,
+                name: item.user.name,
+                username: item.user.username,
+                avatar: item.user.avatar
+            }))
+        });
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
 export {
     createNews,
     findAllNews,
     findTopNews,
     findNewsById,
-    findNewsByTitle
+    findNewsByTitle,
+    findNewsByUser
 }
