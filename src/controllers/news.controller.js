@@ -2,7 +2,8 @@ import {
     createNewsService,
     findAllNewsService,
     countNewsService,
-    findTopNewsService
+    findTopNewsService,
+    findNewsByIdService
 } from '../services/news.service.js'
 
 const createNews = async (req, res) => {
@@ -108,29 +109,82 @@ const findAllNews = async (req, res) => {
 }
 
 const findTopNews = async (req, res) => {
-    
-    const topNews = await findTopNewsService();
+    try {
+        const topNews = await findTopNewsService();
 
-    if(!topNews) {
-        return res.status(400).send({
-            message: "There are no posts"
-        })
-    }
-
-    res.send({
-        results: {
-            id: topNews._id,
-            title: topNews.title,
-            text: topNews.text,
-            banner: topNews.banner,
-            likes: topNews.likes,
-            comments: topNews.comments,
-            userId: topNews.user._id,
-            name: topNews.user.name,
-            username: topNews.user.username,
-            avatar: topNews.user.avatar
+        if(!topNews) {
+            return res.status(400).send({
+                message: "There are no posts"
+            })
         }
-    });
+
+        res.send({
+            results: {
+                id: topNews._id,
+                title: topNews.title,
+                text: topNews.text,
+                banner: topNews.banner,
+                likes: topNews.likes,
+                comments: topNews.comments,
+                userId: topNews.user._id,
+                name: topNews.user.name,
+                username: topNews.user.username,
+                avatar: topNews.user.avatar
+            }
+        });
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
 }
 
-export { createNews, findAllNews, findTopNews }
+const findNewsById = async (req, res) => {
+    try {
+        const { id } = req.params;
+    
+        if(!id) {
+            return res.status(400).send({
+                message: "Id param is expected"
+            })
+        }
+    
+        const news = await findNewsByIdService(id);
+    
+        if (!news) {
+            return res.status(400).send({
+                message: "News not found"
+            })
+        }
+    
+        res.send({
+            results: {
+                id: news._id,
+                title: news.title,
+                text: news.text,
+                banner: news.banner,
+                likes: news.likes,
+                comments: news.comments,
+                userId: news.user._id,
+                name: news.user.name,
+                username: news.user.username,
+                avatar: news.user.avatar
+            }
+        });
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
+export {
+    createNews,
+    findAllNews,
+    findTopNews,
+    findNewsById
+}
