@@ -5,6 +5,14 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        if(!email || !password) {
+            res.status(400).send(
+                {
+                    message: "Invalid credentials"
+                }
+            )
+        }
+        
         const user = await loginService(email);
 
         const message = "User or password not valid" ;
@@ -17,24 +25,33 @@ const login = async (req, res) => {
             )
         }
 
-        const validPassword = await bcrypt.compareSync(password, user.password)
+        await bcrypt.compare(password, user.password, async (error, success) => {           
 
-        if(!validPassword) {
-            res.status(400).send(
-                {
-                    message
-                }
-            )
-        }
+            if(error) {
+                return res.status(400).send(
+                    {
+                        message
+                    }
+                )
+            }
 
-        const token = generateToken(user.id);
+            if(!success) {
+                return res.status(400).send(
+                    {
+                        message
+                    }
+                )
+            }
 
-        res.send( { token } )
+            const token = await generateToken(user.id);
 
-    } catch (erro) {
+            return res.send( { token } )
+        });
+        
+    } catch (error) {
         res.status(500).send(
             {
-                message: erro.message
+                message: error.message
             }
         )
     }
