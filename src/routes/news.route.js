@@ -5,7 +5,12 @@ import {
     findTopNews,
     findNewsById,
     findNewsByTitle,
-    findNewsByUser
+    findNewsByUser,
+    updateNews,
+    deleteNews,
+    likeNews,
+    commentNews,
+    removeCommentNews
 } from '../controllers/news.controller.js'
 import { authMiddleware } from '../middlewares/auth.middleware.js'
 
@@ -18,5 +23,10 @@ route.get('/search', findNewsByTitle)
 route.get('/byuser', authMiddleware, findNewsByUser)
 
 route.get('/:id', authMiddleware, findNewsById)
+route.patch('/:id', authMiddleware, updateNews)
+route.delete('/:id', authMiddleware, deleteNews)
+route.patch('/like/:id', authMiddleware, likeNews)
+route.patch('/comment/:id', authMiddleware, commentNews)
+route.patch('/comment/:idNews/:idComment', authMiddleware, removeCommentNews)
 
 export default route

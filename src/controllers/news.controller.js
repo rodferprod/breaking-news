@@ -5,7 +5,13 @@ import {
     findTopNewsService,
     findNewsByIdService,
     findNewsByTitleService,
-    findNewsByUserService
+    findNewsByUserService,
+    updateNewsService,
+    deleteNewsService,
+    likeNewsService,
+    removelikeNewsService,
+    commentNewsService,
+    removeCommentNewsService
 } from '../services/news.service.js'
 
 const createNews = async (req, res) => {
@@ -266,11 +272,208 @@ const findNewsByUser = async (req, res) => {
     }
 }
 
+const updateNews = async (req, res) => {
+    try{
+        // Passed through authMiddleware
+        const userId = req.id;
+        const { id } = req.params;
+        if(!id) {
+            res.status(400).send({
+                message: 'News id is missing'
+            })
+        }
+
+        const { title, text, banner } = req.body;
+
+        if(!title && !text && !banner) {
+            res.status(400).send({
+                message: 'Submit at least one field to update post'
+            })
+        }
+
+        const news = await findNewsByIdService(id);
+
+        if(!news) {
+            res.status(400).send({
+                message: 'News is missing'
+            })
+        }
+
+        if(String(news.user._id) !== String(userId)) {
+            res.status(400).send({
+                message: "You can't update this post"
+            })
+        }
+
+        await updateNewsService(id, title, text, banner);
+
+        res.send({
+            message: "News updated successfully"
+        })
+
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
+const deleteNews = async (req, res) => {
+    try{
+        const userId = req.id;
+        const { id } = req.params;
+
+        if(!id) {
+            res.status(400).send({
+                message: 'News id is missing'
+            })
+        }
+
+        const news = await findNewsByIdService(id);
+
+        if(!news) {
+            res.status(400).send({
+                message: 'News is missing'
+            })
+        }
+
+        if(String(news.user._id) !== String(userId)) {
+            res.status(400).send({
+                message: "You can't delete this post"
+            })
+        }
+
+        await deleteNewsService(id);
+
+        res.send({
+            message: "News deleted successfully"
+        })
+
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
+const likeNews = async (req, res) => {
+    try{
+        // Passed through authMiddleware
+        const userId = req.id;
+        const { id } = req.params;
+        if(!id) {
+            res.status(400).send({
+                message: 'News id is missing'
+            })
+        }
+
+        const news = await findNewsByIdService(id);
+
+        if(!news) {
+            res.status(400).send({
+                message: 'News is missing'
+            })
+        }
+
+        const likeResult = await likeNewsService(id, userId);
+
+        if(likeResult?.likes.length > 0) {
+            await removelikeNewsService(id, userId);
+            return res.status(200).send({
+                message: "Like removed"
+            })
+        }
+
+        res.send({
+            message: "News liked"
+        })
+
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
+const commentNews = async (req, res) => {
+    try {
+        const { text } = req.body;
+        const userId = req.id;
+        const { id } = req.params;
+
+        if(!text) {
+            return res.status(400).send({
+                message: "Write a message to comment"
+            })
+        }
+
+        await commentNewsService(userId, id, text);
+
+        res.send({
+            message: "News commented"
+        })
+
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
+const removeCommentNews = async (req, res) => {
+    try {
+        const userId = req.id;
+        const { idNews, idComment } = req.params;
+
+        const news = await removeCommentNewsService(userId, idNews, idComment);
+        
+        const commentNews = news.comments.find(
+            comment => comment.commentId === idComment
+        )
+
+        if(!commentNews) {
+            return res.status(404).send({
+                message: "Comment not found"
+            })
+        }
+
+        if(String(commentNews?.userId) !== String(userId)) {
+            return res.status(400).send({
+                message: "You can't remove this comment"
+            })
+        }
+        
+        res.send({
+            message: "Comment removed"
+        })
+
+    } catch (error) {
+        res.status(500).send(
+            {
+                message: error.message
+            }
+        )
+    }
+}
+
 export {
     createNews,
     findAllNews,
     findTopNews,
     findNewsById,
     findNewsByTitle,
-    findNewsByUser
+    findNewsByUser,
+    updateNews,
+    deleteNews,
+    likeNews,
+    commentNews,
+    removeCommentNews
 }
