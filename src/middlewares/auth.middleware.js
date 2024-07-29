@@ -1,63 +1,32 @@
-import jwt from 'jsonwebtoken'
-import userService from '../services/user.service.js'
+import "dotenv/config";
+import jwt from "jsonwebtoken";
+import userRepositories from "../repositories/user.repository.js";
 
-export const authMiddleware = async (req, res, next) => {
-    try {
-        const { authorization } = req.headers;
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader)
+    return res.status(401).send({ message: "The token was not informed!" });
 
-        if(!authorization) {
-            return res.status(401).send({
-                message: "Unauthorizated access: Authorization missing"
-            })
-        }
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2)
+    return res.status(401).send({ message: "Invalid token!" });
 
-        const bearer = authorization.split(" ");
+  const [scheme, token] = parts;
 
-        if(bearer.length !== 2) {
-            return res.status(401).send({
-                message: "Unauthorizated access: Invalid authorization"
-            })
-        }
+  if (!/^Bearer$/i.test(scheme))
+    return res.status(401).send({ message: "Malformatted Token!" });
 
-        const [schema, token] = bearer;
+  jwt.verify(token, process.env.SECRET_JWT, async (err, decoded) => {
+    if (err) return res.status(401).send({ message: "Invalid token!" });
 
-        if(schema !== 'Bearer') {
-            return res.status(401).send({
-                message: "Unauthorizated access: Invalid schema"
-            })
-        }
+    const user = await userRepositories.findByIdUserRepository(decoded.id);
+    if (!user || !user.id)
+      return res.status(401).send({ message: "Invalid token!" });
 
-        jwt.verify(
-            token,
-            process.env.SECRET_JWT,
-            async (error, decoded) => {
-                if(error) {
-                    return res.status(401).send({
-                        message: "Unauthorizated access: Invalid token"
-                    })
-                }
-                
-                const { id, iat, exp } = decoded;
-                
-                const user = await userService.findByIdService(id);
+    req.id = user.id;
 
-                if(!user || !user?._id) {
-                    return res.status(401).send({
-                        message: "User not found"
-                    })
-                }
-
-                req.id = user._id;
-
-                return next();
-            }
-        );
-
-
-    } catch (error) {
-        return res.status(500).send({
-            message: error.message
-        })
-    }
-
+    return next();
+  });
 }
+
+export default authMiddleware;

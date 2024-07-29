@@ -1,68 +1,23 @@
 import userService from "../services/user.service.js";
 
-const create = async (req, res) => {
+const createUserController = async (req, res) => {
     try {
-        const {
-            name,
-            username,
-            email,
-            password,
-            avatar,
-            background
-        } = req.body;
+        const token = await userService.createUserService(req.body);
 
-        if (!name || !username || !email || !password || !avatar || !background) {
-            res.status(400).send(
-                {
-                    message: "All fields are required to create a register"
-                }
-            )
-        } else {
-
-            const user = await userService.createService(req.body);
-
-            if (!user) {
-                return res.status(400).send({
-                    message: "An error occurred while creating User."
-                })
-            }
-
-            res.status(201).send(
-                {
-                    message: "User created successfully",
-                    user: {
-                        id: user._id,
-                        name,
-                        username,
-                        email,
-                        avatar,
-                        background
-                    },
-                }
-            )
-        }
+        res.status(201).send(token)
+        
     } catch (error) {
-        res.status(500).send(
-            {
-                message: error.message
-            }
-        )
+        return res.status(400).send(error.message);
     }
 }
 
-const findAll = async (req, res) => {
+const findAllUserController = async (req, res) => {
     try{
-        const users = await userService.findAllService();
+        const users = await userService.findAllUserService();
 
-        if (users.length === 0) {
-            return res.status(400).send({
-                message: "There are no registered users"
-            })
-        }
-
-        res.send(users);
+        return res.send(users);
     } catch (error) {
-        res.status(500).send(
+        res.status(400).send(
             {
                 message: error.message
             }
@@ -70,21 +25,19 @@ const findAll = async (req, res) => {
     }
 }
 
-const findById = async (req, res) => {
-    try{
-        const user = req.user;
-
-        res.send(user);
-    } catch (error) {
-        res.status(500).send(
-            {
-                message: error.message
-            }
-        )
-    }
+const findByIdUserController = async (req, res) => {
+    try {
+        const user = await userService.findByIdUserService(
+          req.params.id,
+          req.id
+        );
+        return res.send(user);
+      } catch (e) {
+        return res.status(400).send(e.message);
+      }
 }
 
-const update = async (req, res) => {
+const updateUserController = async (req, res) => {
     try{
         const {
             name,
@@ -95,17 +48,9 @@ const update = async (req, res) => {
             background
         } = req.body;
 
-        if (!name && !username && !email && !password && !avatar && !background) {
-            res.status(400).send(
-                {
-                    message: "Submit at least one field for update"
-                }
-            )
-        }
+        const { id } = req;
 
-        const { id, user } = req;
-
-        await userService.updateService(
+        await userService.updateUserService(
             id,
             name,
             username,
@@ -115,9 +60,10 @@ const update = async (req, res) => {
             background
         )
 
-        res.send({
+        return res.send({
             message: "User updated"
         })
+
     } catch (error) {
         res.status(500).send(
             {
@@ -128,8 +74,8 @@ const update = async (req, res) => {
 }
 
 export default {
-    create,
-    findAll,
-    findById,
-    update
+    createUserController,
+    findAllUserController,
+    findByIdUserController,
+    updateUserController
 }

@@ -13,4 +13,4 @@ const generateToken = (id) => jwt.sign(
     { expiresIn: 86400 } // 24h in seconds
 );
 
-export { loginService, generateToken }
+export default { loginService, generateToken }

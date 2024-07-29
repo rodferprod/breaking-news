@@ -1,10 +1,10 @@
 import { Router } from 'express';
-const route = Router();
-
 import swaggwerUi from "swagger-ui-express"
 import swaggerDocument from '../swagger.json' assert { type: "json" }
 
-route.use("/", swaggwerUi.serve);
-route.get("/", swaggwerUi.setup(swaggerDocument))
+const swaggweRouter = Router();
 
-export default route;
+swaggweRouter.use("/", swaggwerUi.serve);
+swaggweRouter.get("/", swaggwerUi.setup(swaggerDocument))
+
+export default swaggweRouter;
